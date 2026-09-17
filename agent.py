@@ -23,7 +23,7 @@ EurekAlert, المختبرات والجامعات الكبرى...) عن آخر 7
     ANTHROPIC_MODEL     معرّف النموذج (افتراضي أدناه — تحقق من
                          https://docs.claude.com/en/docs/about-claude/models
                          لأحدث معرّف عند الحاجة)
-    WP_CATEGORY_NAME    اسم تصنيف ووردبريس المستهدف (افتراضي: "آفاق فيزيائية")
+    WP_CATEGORY_NAME    اسم تصنيف ووردبريس المستهدف (افتراضي: "نبض الأبحاث")
     PUBLISH_STATUS      "draft" (افتراضي) أو "publish"
     LOOKBACK_DAYS       عدد الأيام للبحث (افتراضي: 7)
 """
@@ -44,7 +44,7 @@ INSTRUCTIONS_PATH = REPO_ROOT / "instructions.md"
 REPORTS_DIR = REPO_ROOT / "reports"
 
 DEFAULT_MODEL = "claude-sonnet-4-5-20250929"
-DEFAULT_CATEGORY_NAME = "آفاق فيزيائية"
+DEFAULT_CATEGORY_NAME = "نبض الأبحاث"
 DEFAULT_LOOKBACK_DAYS = 7
 MAX_OUTPUT_TOKENS = 8000
 MAX_WEB_SEARCH_USES = 40
