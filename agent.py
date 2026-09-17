@@ -212,10 +212,14 @@ def main() -> None:
     if missing:
         sys.exit(f"متغيرات بيئة ناقصة: {', '.join(missing)}")
 
-    model = os.environ.get("GEMINI_MODEL", DEFAULT_MODEL)
-    category_name = os.environ.get("WP_CATEGORY_NAME", DEFAULT_CATEGORY_NAME)
-    status = os.environ.get("PUBLISH_STATUS", "draft")
-    lookback_days = int(os.environ.get("LOOKBACK_DAYS", DEFAULT_LOOKBACK_DAYS))
+    # ملاحظة: نستخدم `or` بدل الوسيط الثاني في os.environ.get لأن GitHub
+    # Actions يمرّر متغيرات `vars.*` غير المُعرَّفة كسلسلة فارغة "" (وليس
+    # قيمة غائبة)، و os.environ.get(key, default) لا يستبدل القيمة الفارغة
+    # بالافتراضي لأن المفتاح موجود فعليًا (فقط فارغ).
+    model = os.environ.get("GEMINI_MODEL") or DEFAULT_MODEL
+    category_name = os.environ.get("WP_CATEGORY_NAME") or DEFAULT_CATEGORY_NAME
+    status = os.environ.get("PUBLISH_STATUS") or "draft"
+    lookback_days = int(os.environ.get("LOOKBACK_DAYS") or DEFAULT_LOOKBACK_DAYS)
 
     end = dt.datetime.now(dt.timezone.utc).date()
     start = end - dt.timedelta(days=lookback_days)
