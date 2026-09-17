@@ -35,7 +35,7 @@ New repository secret**، أضف:
 
 | الاسم | القيمة |
 |---|---|
-| `GEMINI_API_KEY` | مفتاح Google Gemini API الخاص بك (أنشئه من aistudio.google.com/apikey) |
+| `GEMINI_API_KEY` | مفتاح Google Gemini API الخاص بك ( aistudio.google.com/apikey) |
 | `WP_URL` | `https://phy-lab.com` |
 | `WP_USER` | اسم مستخدم ووردبريس الذي له صلاحية إنشاء مقالات |
 | `WP_APP_PASSWORD` | كلمة مرور تطبيق ووردبريس (وليست كلمة مرور حسابك) |
