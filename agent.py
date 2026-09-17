@@ -46,7 +46,7 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent
 INSTRUCTIONS_PATH = REPO_ROOT / "instructions.md"
 REPORTS_DIR = REPO_ROOT / "reports"
 
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.6-flash"
 DEFAULT_CATEGORY_NAME = "نبض الأبحاث"
 DEFAULT_LOOKBACK_DAYS = 7
 MAX_OUTPUT_TOKENS = 16000
