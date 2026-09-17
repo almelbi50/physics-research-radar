@@ -54,10 +54,13 @@ New repository secret**، أضف:
 في **Settings → Secrets and variables → Actions → Variables** يمكنك
 ضبط، عند الحاجة فقط:
 
-- `GEMINI_MODEL` — لتحديد نموذج مختلف عن الافتراضي (`gemini-2.5-flash`)
+- `GEMINI_MODEL` — لتحديد نموذج مختلف عن الافتراضي (`gemini-3.6-flash`)
   في `agent.py`. راجع القائمة المحدّثة في
   <https://ai.google.dev/gemini-api/docs/models> بين حين وآخر، وتأكد أن
-  النموذج المختار يدعم أداة `google_search`.
+  النموذج المختار يدعم أداة `google_search` (نماذج Gemini تُستبعد أحيانًا
+  فجأة من الاستخدام لحسابات جديدة كما حدث مع `gemini-2.5-flash`، لذا إن
+  فشل التشغيل بخطأ `404 NOT_FOUND` يذكر نموذجًا بديلًا، حدّث هذا المتغير
+  أو القيمة الافتراضية في `agent.py`).
 - `WP_CATEGORY_NAME` — إن أردت تصنيفًا مختلفًا عن "نبض الأبحاث".
 - `PUBLISH_STATUS` — غيّرها إلى `publish` لاحقًا إذا قررت النشر المباشر
   بدل المسودة (الإعداد الافتراضي حاليًا: مسودة للمراجعة).
