@@ -1,0 +1,50 @@
+name: Weekly Physics Research Radar
+
+on:
+  schedule:
+    # كل يوم اثنين الساعة 05:00 UTC = 08:00 بتوقيت الرياض (UTC+3)
+    # عدّل هذا التوقيت حسب رغبتك — https://crontab.guru
+    - cron: "0 5 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run physics research radar agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USER: ${{ secrets.WP_USER }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          # اختياري: اضبط هذه كـ Repository Variables إن أردت تجاوز الافتراضي
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          WP_CATEGORY_NAME: ${{ vars.WP_CATEGORY_NAME }}
+          PUBLISH_STATUS: ${{ vars.PUBLISH_STATUS }}
+        run: python agent.py
+
+      - name: Commit generated report to repo
+        run: |
+          git config user.name "physics-radar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add reports/
+          if git diff --cached --quiet; then
+            echo "لا يوجد تقرير جديد لإضافته."
+          else
+            git commit -m "أضف نشرة آفاق فيزيائية الأسبوعية"
+            git push
+          fi
