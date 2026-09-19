@@ -44,10 +44,12 @@ import datetime as dt
 import os
 import pathlib
 import sys
+import time
 
 import markdown as md
 import requests
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent
@@ -65,6 +67,12 @@ CONTINUE_PROMPT = (
     "تابع من حيث توقفت تمامًا، دون إعادة كتابة أي جزء سبق أن أنتجته، "
     "حتى تكمل التقرير النهائي الكامل."
 )
+
+# مهلات إعادة المحاولة (بالثواني) عند ضغط مؤقت على خادم Gemini (503
+# UNAVAILABLE) — إضافية فوق إعادة المحاولة المدمجة في SDK نفسه، لأن
+# التشغيل التلقائي عبر GitHub Actions لا يوجد فيه إنسان لإعادة التشغيل
+# يدويًا.
+GEMINI_SERVER_RETRY_DELAYS = [20, 45, 90]
 
 TAVILY_SEARCH_URL = "https://api.tavily.com/search"
 # نتائج tier-1 (المصادر الأساسية الأكثر موثوقية من القسم 3 في instructions.md)
@@ -361,6 +369,30 @@ def build_user_prompt(
     )
 
 
+def _send_message_with_retry(chat, message: str):
+    """يرسل رسالة إلى Gemini، ويعيد المحاولة تلقائيًا عند خطأ خادم مؤقت
+    (503 UNAVAILABLE بسبب ضغط مؤقت على النموذج) بدل الفشل الفوري — مهم
+    لأن التشغيل الأسبوعي عبر GitHub Actions لا يوجد فيه إنسان لإعادة
+    الضغط على 'Run workflow' يدويًا."""
+
+    last_exc: Exception | None = None
+    for attempt, delay in enumerate([0] + GEMINI_SERVER_RETRY_DELAYS, start=1):
+        if delay:
+            print(
+                f"  انتظار {delay} ثانية قبل إعادة المحاولة رقم {attempt} "
+                "بسبب ضغط مؤقت على خادم Gemini (503) ...",
+                file=sys.stderr,
+            )
+            time.sleep(delay)
+        try:
+            return chat.send_message(message)
+        except genai_errors.ServerError as exc:
+            last_exc = exc
+            print(f"تحذير: خطأ خادم مؤقت من Gemini (محاولة {attempt}): {exc}", file=sys.stderr)
+            continue
+    raise last_exc  # type: ignore[misc]
+
+
 def run_research_agent(client: genai.Client, model: str, system_prompt: str, user_prompt: str) -> str:
     """يشغّل Gemini لفرز نتائج Tavily الحقيقية والتحقق منها وتنسيقها فقط —
     بدون أي أداة بحث مدمجة (google_search غير متاحة على الخطة المجانية).
@@ -377,7 +409,7 @@ def run_research_agent(client: genai.Client, model: str, system_prompt: str, use
     message = user_prompt
 
     for round_index in range(MAX_CONTINUATION_ROUNDS):
-        response = chat.send_message(message)
+        response = _send_message_with_retry(chat, message)
         text = getattr(response, "text", None) or ""
         collected_text.append(text)
 
