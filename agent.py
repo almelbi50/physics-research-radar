@@ -43,6 +43,7 @@ from __future__ import annotations
 import datetime as dt
 import os
 import pathlib
+import re
 import sys
 import time
 
@@ -473,6 +474,12 @@ def find_category_id(wp_url: str, auth: tuple[str, str], category_name: str) -> 
         return None
 
 
+BARE_URL_PATTERN = re.compile(r"(?<![<(])\bhttps?://[^\s<>()\[\]]+")
+
+
+def linkify_bare_urls(markdown_text: str) -> str: return BARE_URL_PATTERN.sub(lambda m: f"<{m.group(0)}>", markdown_text)
+    
+
 def publish_to_wordpress(
     markdown_text: str,
     start: dt.date,
@@ -483,7 +490,7 @@ def publish_to_wordpress(
     category_name: str,
     status: str,
 ) -> dict:
-    html_content = md.markdown(markdown_text, extensions=["extra", "sane_lists"])
+    html_content = md.markdown(linkify_bare_urls(markdown_text), extensions=["extra", "sane_lists"])
     title = f"نبض الأبحاث — النشرة البحثية الأسبوعية ({start.isoformat()} – {end.isoformat()})"
 
     auth = (wp_user, wp_app_password)
