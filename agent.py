@@ -53,6 +53,8 @@ from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
 
+from wp_render import render_wp_html
+
 REPO_ROOT = pathlib.Path(__file__).resolve().parent
 INSTRUCTIONS_PATH = REPO_ROOT / "instructions.md"
 REPORTS_DIR = REPO_ROOT / "reports"
@@ -478,13 +480,13 @@ BARE_URL_PATTERN = re.compile(r"(?<![<(])\bhttps?://[^\s<>()\[\]]+")
 
 
 def linkify_bare_urls(markdown_text: str) -> str: return BARE_URL_PATTERN.sub(lambda m: f"<{m.group(0)}>", markdown_text)
-    
+
 
 LEADING_TITLE_PATTERN = re.compile(r"\A\s*#\s.*?(?=^##\s)", re.S | re.M)
 
 
 def strip_leading_title_block(markdown_text: str) -> str: return LEADING_TITLE_PATTERN.sub("", markdown_text, count=1)
-    
+
 
 def publish_to_wordpress(
     markdown_text: str,
@@ -496,7 +498,12 @@ def publish_to_wordpress(
     category_name: str,
     status: str,
 ) -> dict:
-    html_content = md.markdown(linkify_bare_urls(strip_leading_title_block(markdown_text)), extensions=["extra", "sane_lists"])
+    # كتلة HTML بهوية phy-lab.com (wp_render.py)؛ وإن لم يُتعرّف على بنية
+    # القالب يُرجع None فنعود إلى التحويل العادي عبر مكتبة markdown.
+    html_content = render_wp_html(markdown_text, start, end) or md.markdown(
+        linkify_bare_urls(strip_leading_title_block(markdown_text)),
+        extensions=["extra", "sane_lists"],
+    )
     title = f"نبض الأبحاث — النشرة البحثية الأسبوعية ({start.isoformat()} – {end.isoformat()})"
 
     auth = (wp_user, wp_app_password)
